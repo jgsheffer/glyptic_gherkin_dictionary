@@ -77,7 +77,7 @@ def generate_html_string(gherkin_dictionary)
   ending_html = '</table>'+features_parsed+'</body></html>'
   final_html = beginning_html
   gherkin_dictionary.each do |step_entry|
-    final_html = final_html + '<tr><td>'+ format_gherkin_step(step_entry.original_step) +'</td><td></td></tr>'
+    final_html = final_html + "<tr><td>#{format_gherkin_step(step_entry.original_step)}</td><td>#{step_entry.uses}</td></tr>"
   end
   final_html+ending_html
 end
