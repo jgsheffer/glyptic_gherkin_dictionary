@@ -14,7 +14,8 @@ def create_dictionary(features_location="**/features/*", output="gherkin_diction
     features.each do |feature_file|
       $number_of_features = $number_of_features+1
       $feature_collection_string = "#{$feature_collection_string} #{feature_file} :::"
-      contents = File.open(feature_file.to_s, "rb").read
+      current_file = File.open(feature_file.to_s, "rb").read
+      contents = contents + current_file
     end
   end
   contents_cleaned = contents.gsub(/|.*|/, " ").gsub("Examples:", "")
