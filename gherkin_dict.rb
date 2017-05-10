@@ -31,7 +31,10 @@ end
 
 def get_gherkin_dictionary(contents)
   gherkin_dictionary = []
+  total_lines = contents.count("\n")
+  current_line = 0
   contents.each_line do |line|
+    current_line = current_line +1
     if(line != nil && line != "" && is_gherkin_step(line))
       line = add_place_holders(line)
       exists_in_dictonary = false
@@ -45,6 +48,7 @@ def get_gherkin_dictionary(contents)
       end
         gherkin_dictionary << StepEntry.new(correct_spacing(line.strip), clean_gherkin_string(line), 1) if !exists_in_dictonary
     end
+    puts "Creating Dictionary::: #{current_line}/#{total_lines}"
   end
   gherkin_dictionary
 end
@@ -55,7 +59,7 @@ def find_possible_duplicates(dictionary)
   total_number_of_steps_parsed = dictionary.size
   current_number_of_steps_parsed = 0
   dictionary.each do |step_entry|
-    puts "Steps parsed #{current_number_of_steps_parsed}/#{total_number_of_steps_parsed}"
+    puts "Checking steps for duplicates:::  #{current_number_of_steps_parsed}/#{total_number_of_steps_parsed}"
     current_number_of_steps_parsed = current_number_of_steps_parsed + 1
     dictionary.each do |step_entry_to_compare|
       similarity = string_compare.getDistance(step_entry.cleaned_step, step_entry_to_compare.cleaned_step )*100
