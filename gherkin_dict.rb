@@ -15,7 +15,7 @@ def create_dictionary(features_location="**/features/*", output="gherkin_diction
   else
     features.each do |feature_file|
       $number_of_features = $number_of_features+1
-      $feature_collection_string = "#{$feature_collection_string} #{feature_file} :::"
+      $feature_collection_string = "#{$feature_collection_string} #{feature_file} <br/>"
       current_file = File.open(feature_file.to_s, "rb").read
       contents = contents + current_file
     end
@@ -111,11 +111,13 @@ end
 def generate_html_string(gherkin_dictionary)
   gherkin_dictionary.sort_by!{ |step_entry| step_entry.cleaned_step.downcase }
   features_parsed="<details><summary>#{$number_of_features} features parsed</summary><pre class=\"prettyprint\">#{$feature_collection_string}</pre></details>"
-  beginning_html = '<!DOCTYPE html><html><head><style>table {font-family:monospace, arial, sans-serif;border-collapse: collapse;width: 100%;}td, th {border: 1px solid #dddddd;text-align: left;padding: 8px;}tr:nth-child(even) {background-color: #dddddd;}</style></head><body><table><tr><th>Step</th><th>Uses</th></tr><tr>'
+  beginning_html = '<!DOCTYPE html><html><head><style>table {font-family:monospace, arial, sans-serif;border-collapse: collapse;width: 100%;}td, th {border: 1px solid #dddddd;text-align: left;padding: 8px;}tr:nth-child(even) {background-color: #dddddd;}</style></head><body><table><tr><th>#</th><th>Step</th><th>Uses</th></tr><tr>'
   ending_html = '</table>'+features_parsed+'</body></html>'
   final_html = beginning_html
+  step_number = 1
   gherkin_dictionary.each do |step_entry|
-    final_html = final_html + "<tr><td>#{format_gherkin_step(step_entry.original_step)}#{generate_duplicate_blob(step_entry.possible_duplicates)}</td><td>#{step_entry.uses}</td></tr>"
+    final_html = final_html + "<tr><td>#{step_number}</td><td>#{format_gherkin_step(step_entry.original_step)}#{generate_duplicate_blob(step_entry.possible_duplicates)}</td><td>#{step_entry.uses}</td></tr>"
+    step_number = step_number + 1
   end
   final_html+ending_html
 end
