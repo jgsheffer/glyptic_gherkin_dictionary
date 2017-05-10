@@ -88,11 +88,11 @@ end
 
 
 def clean_gherkin_string(string)
- string.downcase.strip.gsub(/^given /, "").gsub(/^when /, "").gsub(/^then /, "").gsub(/^but /, "").gsub(/^and /, "").gsub(/".*"/, "").gsub(/<.*>/, "").gsub(/\s\s/, " ").gsub(/|.*|/, " ").gsub(/\n/, " ").strip
+ string.downcase.strip.gsub(/^given /, "").gsub(/^when /, "").gsub(/^then /, "").gsub(/^but /, "").gsub(/^and /, "").gsub(/".*"/, "").gsub(/<.*>/, "").gsub(/\s\s/, " ").gsub(/|.*|/, " ").gsub(/\n/, " ").gsub(/#.*/, "").strip
 end
 
 def correct_spacing(string)
- string.strip.gsub(/^When /, "&nbsp;When ").gsub(/^Then /, "&nbsp;Then ").gsub(/^But /, "&nbsp;&nbsp;But ").gsub(/^And /, "&nbsp;&nbsp;And ")
+ string.strip.gsub(/^When /, "&nbsp;When ").gsub(/^Then /, "&nbsp;Then ").gsub(/^But /, "&nbsp;&nbsp;But ").gsub(/^And /, "&nbsp;&nbsp;And ").gsub(/#.*/, "")
 end
 
 def is_gherkin_step(string)
