@@ -14,6 +14,7 @@ def create_dictionary(features_location="**/features/*", output="gherkin_diction
       raise "Your file location #{features_location} does not contain any features"
   else
     features.each do |feature_file|
+      puts_working_string()
       $number_of_features = $number_of_features+1
       $feature_collection_string = "#{$feature_collection_string} #{feature_file} <br/>"
       current_file = File.open(feature_file.to_s, "rb").read
@@ -25,6 +26,7 @@ def create_dictionary(features_location="**/features/*", output="gherkin_diction
 
   out_file.puts(generate_html_string(gherkin_dict))
   out_file.close
+  puts "All done"
 end
 
 
@@ -51,14 +53,10 @@ end
 def find_possible_duplicates(dictionary)
   string_compare = FuzzyStringMatch::JaroWinkler.create( :pure )
   updated_dictionary = []
-  puts "here"
   dictionary.each do |step_entry|
-    puts step_entry.to_s
     dictionary.each do |step_entry_to_compare|
       similarity = string_compare.getDistance(step_entry.cleaned_step, step_entry_to_compare.cleaned_step )*100
-      puts similarity
       if (88 < similarity && similarity < 100)
-          puts "found duplicate"
         step_entry.add_possible_duplicate(step_entry_to_compare.original_step, similarity)
       end
     end
@@ -72,7 +70,6 @@ def generate_duplicate_blob(duplicate_array)
   beginning_string = "<details><summary>Possible Duplicate Steps</summary><pre class=\"prettyprint\"><ul>"
   end_string="</ul></pre></details>"
   list_string=""
-  puts duplicate_array.size
   if(duplicate_array != nil)
     duplicate_array.each do |duplicate_step|
       duplicate_found = true
@@ -164,5 +161,19 @@ class StepEntry
       @possible_duplicates << DuplicateEntry.new(step, percentage_of_similarity)
     end
 end
+
+def puts_working_string
+  if $last_puts == nil
+    $last_puts = Time.now
+    puts "Working."
+  elsif ((Time.now - $last_puts) > 7)
+    puts "Working..."
+    $last_puts = nil
+  elsif((Time.now - $last_puts) > 3)
+    puts "Working.."
+  end
+end
+
+
 
 create_dictionary()
