@@ -14,7 +14,6 @@ def create_dictionary(features_location="**/features/*", output="gherkin_diction
       raise "Your file location #{features_location} does not contain any features"
   else
     features.each do |feature_file|
-      puts_working_string()
       $number_of_features = $number_of_features+1
       $feature_collection_string = "#{$feature_collection_string} #{feature_file} <br/>"
       current_file = File.open(feature_file.to_s, "rb").read
@@ -53,7 +52,11 @@ end
 def find_possible_duplicates(dictionary)
   string_compare = FuzzyStringMatch::JaroWinkler.create( :pure )
   updated_dictionary = []
+  total_number_of_steps_parsed = dictionary.size
+  current_number_of_steps_parsed = 0
   dictionary.each do |step_entry|
+    puts "Steps parsed #{current_number_of_steps_parsed}/#{total_number_of_steps_parsed}"
+    current_number_of_steps_parsed = current_number_of_steps_parsed + 1
     dictionary.each do |step_entry_to_compare|
       similarity = string_compare.getDistance(step_entry.cleaned_step, step_entry_to_compare.cleaned_step )*100
       if (88 < similarity && similarity < 100)
@@ -160,18 +163,6 @@ class StepEntry
     def add_possible_duplicate(step, percentage_of_similarity)
       @possible_duplicates << DuplicateEntry.new(step, percentage_of_similarity)
     end
-end
-
-def puts_working_string
-  if $last_puts == nil
-    $last_puts = Time.now
-    puts "Working."
-  elsif ((Time.now - $last_puts) > 7)
-    puts "Working..."
-    $last_puts = nil
-  elsif((Time.now - $last_puts) > 3)
-    puts "Working.."
-  end
 end
 
 
