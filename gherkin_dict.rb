@@ -58,13 +58,16 @@ def find_possible_duplicates(dictionary)
   updated_dictionary = []
   total_number_of_steps_parsed = dictionary.size
   current_number_of_steps_parsed = 0
+  index_to_check = 1
   dictionary.each do |step_entry|
     puts "Checking steps for duplicates:::  #{current_number_of_steps_parsed}/#{total_number_of_steps_parsed}"
     current_number_of_steps_parsed = current_number_of_steps_parsed + 1
     dictionary.each do |step_entry_to_compare|
-      similarity = string_compare.getDistance(step_entry.cleaned_step, step_entry_to_compare.cleaned_step )*100
-      if (88 < similarity && similarity < 100)
-        step_entry.add_possible_duplicate(step_entry_to_compare.original_step, similarity)
+      if(index_to_check < current_number_of_steps_parsed)
+        similarity = string_compare.getDistance(step_entry.cleaned_step, step_entry_to_compare.cleaned_step )*100
+        if (88 < similarity && similarity < 100)
+          step_entry.add_possible_duplicate(step_entry_to_compare.original_step, similarity)
+        end
       end
     end
     updated_dictionary << step_entry
