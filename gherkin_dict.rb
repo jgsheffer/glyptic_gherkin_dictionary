@@ -1,3 +1,4 @@
+require 'fuzzystringmatch'
 
 def create_dictionary(features_location="**/features/*", output="gherkin_dictionary.html")
   $number_of_features = 0
@@ -20,7 +21,9 @@ def create_dictionary(features_location="**/features/*", output="gherkin_diction
     end
   end
   contents_cleaned = contents.gsub(/|.*|/, " ").gsub("Examples:", "")
-  out_file.puts(generate_html_string(get_gherkin_dictionary(contents)))
+  gherkin_dict = find_possible_duplicates(get_gherkin_dictionary(contents))
+
+  out_file.puts(generate_html_string(gherkin_dict))
   out_file.close
 end
 
@@ -45,6 +48,41 @@ def get_gherkin_dictionary(contents)
   gherkin_dictionary
 end
 
+def find_possible_duplicates(dictionary)
+  string_compare = FuzzyStringMatch::JaroWinkler.create( :pure )
+  updated_dictionary = []
+  puts "here"
+  dictionary.each do |step_entry|
+    puts step_entry.to_s
+    dictionary.each do |step_entry_to_compare|
+      similarity = string_compare.getDistance(step_entry.cleaned_step, step_entry_to_compare.cleaned_step )*100
+      puts similarity
+      if (88 < similarity && similarity < 100)
+          puts "found duplicate"
+        step_entry.add_possible_duplicate(step_entry_to_compare.original_step, similarity)
+      end
+    end
+    updated_dictionary << step_entry
+  end
+  updated_dictionary
+end
+
+def generate_duplicate_blob(duplicate_array)
+  duplicate_found = false
+  beginning_string = "<details><summary>Possible Duplicate Steps</summary><pre class=\"prettyprint\"><ul>"
+  end_string="</ul></pre></details>"
+  list_string=""
+  puts duplicate_array.size
+  if(duplicate_array != nil)
+    duplicate_array.each do |duplicate_step|
+      duplicate_found = true
+      list_string="#{list_string}<li>Similarity: #{duplicate_step.percentage_of_similarity} Step: #{duplicate_step.step}</li>"
+    end
+    if(duplicate_found)
+      beginning_string+list_string+end_string
+    end
+  end
+end
 
 
 
@@ -77,16 +115,32 @@ def generate_html_string(gherkin_dictionary)
   ending_html = '</table>'+features_parsed+'</body></html>'
   final_html = beginning_html
   gherkin_dictionary.each do |step_entry|
-    final_html = final_html + "<tr><td>#{format_gherkin_step(step_entry.original_step)}</td><td>#{step_entry.uses}</td></tr>"
+    final_html = final_html + "<tr><td>#{format_gherkin_step(step_entry.original_step)}#{generate_duplicate_blob(step_entry.possible_duplicates)}</td><td>#{step_entry.uses}</td></tr>"
   end
   final_html+ending_html
 end
 
+class DuplicateEntry
+  def initialize(step, percentage_of_similarity)
+    @step=step
+    @percentage_of_similarity=percentage_of_similarity
+  end
+
+  def step()
+    @step
+  end
+  def percentage_of_similarity()
+    @percentage_of_similarity
+  end
+end
+
 class StepEntry
-  def initialize(original_step, cleaned_step, uses)
+  @possible_duplicates=[]
+  def initialize(original_step, cleaned_step, uses, possible_duplicates=[])
     @original_step=original_step
     @cleaned_step=cleaned_step
     @uses=uses
+    @possible_duplicates=possible_duplicates
   end
 
     def cleaned_step()
@@ -100,6 +154,12 @@ class StepEntry
     end
     def set_uses(uses)
       @uses = uses
+    end
+    def possible_duplicates()
+      @possible_duplicates
+    end
+    def add_possible_duplicate(step, percentage_of_similarity)
+      @possible_duplicates << DuplicateEntry.new(step, percentage_of_similarity)
     end
 end
 
