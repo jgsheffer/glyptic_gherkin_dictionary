@@ -25,12 +25,16 @@ def create_dictionary(features_location="**/features/*", output="gherkin_diction
 
   out_file.puts(generate_html_string(gherkin_dict))
   out_file.close
+  puts "All done"
 end
 
 
 def get_gherkin_dictionary(contents)
   gherkin_dictionary = []
+  total_lines = contents.count("\n")
+  current_line = 0
   contents.each_line do |line|
+    current_line = current_line +1
     if(line != nil && line != "" && is_gherkin_step(line))
       line = add_place_holders(line)
       exists_in_dictonary = false
@@ -44,6 +48,7 @@ def get_gherkin_dictionary(contents)
       end
         gherkin_dictionary << StepEntry.new(correct_spacing(line.strip), clean_gherkin_string(line), 1) if !exists_in_dictonary
     end
+    puts "Creating Dictionary::: #{current_line}/#{total_lines}"
   end
   gherkin_dictionary
 end
@@ -51,17 +56,20 @@ end
 def find_possible_duplicates(dictionary)
   string_compare = FuzzyStringMatch::JaroWinkler.create( :pure )
   updated_dictionary = []
-  puts "here"
+  total_number_of_steps_parsed = dictionary.size
+  current_number_of_steps_parsed = 0
+  index_to_check = 1
+  shrinking_dictionary = dictionary.clone
   dictionary.each do |step_entry|
-    puts step_entry.to_s
-    dictionary.each do |step_entry_to_compare|
-      similarity = string_compare.getDistance(step_entry.cleaned_step, step_entry_to_compare.cleaned_step )*100
-      puts similarity
-      if (88 < similarity && similarity < 100)
-          puts "found duplicate"
-        step_entry.add_possible_duplicate(step_entry_to_compare.original_step, similarity)
-      end
+    puts "Checking steps for duplicates:::  #{current_number_of_steps_parsed}/#{total_number_of_steps_parsed}"
+    current_number_of_steps_parsed = current_number_of_steps_parsed + 1
+    shrinking_dictionary.each do |step_entry_to_compare|
+       similarity = string_compare.getDistance(step_entry.cleaned_step, step_entry_to_compare.cleaned_step )*100
+       if (88 < similarity && similarity < 100)
+         step_entry.add_possible_duplicate(step_entry_to_compare.original_step, similarity)
+       end
     end
+	shrinking_dictionary.shift
     updated_dictionary << step_entry
   end
   updated_dictionary
@@ -72,7 +80,6 @@ def generate_duplicate_blob(duplicate_array)
   beginning_string = "<details><summary>Possible Duplicate Steps</summary><pre class=\"prettyprint\"><ul>"
   end_string="</ul></pre></details>"
   list_string=""
-  puts duplicate_array.size
   if(duplicate_array != nil)
     duplicate_array.each do |duplicate_step|
       duplicate_found = true
@@ -164,5 +171,7 @@ class StepEntry
       @possible_duplicates << DuplicateEntry.new(step, percentage_of_similarity)
     end
 end
+
+
 
 create_dictionary()
